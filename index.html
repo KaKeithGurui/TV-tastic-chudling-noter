@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Formatter</title>
+
+<style>
+body {
+    font-family: Arial;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+button {
+    padding: 8px 12px;
+    margin: 5px 5px 10px 0;
+    cursor: pointer;
+}
+
+.command-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    background: #f9f9f9;
+}
+
+.command-text {
+    font-family: monospace;
+    margin-bottom: 6px;
+}
+
+.copy-btn {
+    font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Format 3 Tool</h2>
+
+<textarea id="input" placeholder="Paste input here..."></textarea>
+
+<button onclick="formatText()">Format</button>
+
+<h3>Commands</h3>
+<div id="commands"></div>
+
+<script>
+function formatText() {
+    const input = document.getElementById("input").value;
+
+    const lines = input.split("\n")
+        .map(l => l.trim())
+        .filter(l => l);
+
+    const groups = {};
+    const order = [];
+
+    for (let line of lines) {
+        if (!line.includes("|")) continue;
+
+        const name = line.split("|")[0].trim();
+        const value = line.substring(line.indexOf("|") + 1).trim();
+
+        if (!groups[value]) {
+            groups[value] = [];
+            order.push(value);
+        }
+
+        groups[value].push(name);
+    }
+
+    const container = document.getElementById("commands");
+    container.innerHTML = "";
+
+    for (let value of order) {
+        const names = groups[value];
+
+        let command;
+        if (names.length === 1) {
+            command = `$n ${names[0]} $${value}`;
+        } else {
+            command = `$n ${names.join("$")}$${value}`;
+        }
+
+        const box = document.createElement("div");
+        box.className = "command-box";
+
+        const text = document.createElement("div");
+        text.className = "command-text";
+        text.textContent = command;
+
+        const btn = document.createElement("button");
+        btn.className = "copy-btn";
+        btn.textContent = "Copy";
+
+        btn.onclick = () => {
+            navigator.clipboard.writeText(command);
+
+            // temporary feedback
+            btn.textContent = "Copied!";
+            setTimeout(() => {
+                btn.textContent = "Copy";
+            }, 800);
+        };
+
+        box.appendChild(text);
+        box.appendChild(btn);
+        container.appendChild(box);
+    }
+}
+</script>
+
+</body>
+</html>
